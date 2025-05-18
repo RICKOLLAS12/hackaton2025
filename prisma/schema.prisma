@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  nom       String
+  prenom    String
+  role      Role      @default(PARENT)
+  telephone String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  dossiers  Dossier[]
+
+  @@map("users")
+}
+
+model Dossier {
+  id               Int              @id @default(autoincrement())
+  nom              String
+  prenom           String
+  dateNaissance    DateTime         @map("date_naissance")
+  sexe             Sexe
+  commune          String
+  quartier         String?
+  parentNom        String           @map("parent_nom")
+  parentTelephone  String?          @map("parent_telephone")
+  parentEmail      String?          @map("parent_email")
+  diagnostic       String?
+  statut           StatutDossier    @default(NOUVEAU)
+  dateCreation     DateTime         @default(now()) @map("date_creation")
+  dateModification DateTime         @updatedAt @map("date_modification")
+  userId           Int              @map("user_id")
+  commentaires     Commentaire[]
+  documents        Document[]
+  user             User             @relation(fields: [userId], references: [id])
+  formulaireFhn    FormulaireFhn?
+  formulaireTarii  FormulaireTarii?
+  formulaireWisi   FormulaireWisi?
+
+  @@map("dossiers")
+}
+
+model Document {
+  id         Int      @id @default(autoincrement())
+  dossierId  Int      @map("dossier_id")
+  name       String
+  type       String
+  url        String
+  uploadDate DateTime @default(now()) @map("upload_date")
+  dossier    Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Commentaire {
+  id        Int      @id @default(autoincrement())
+  dossierId Int      @map("dossier_id")
+  text      String
+  author    String
+  date      DateTime @default(now())
+  dateModification DateTime @default(now())
+  dossier   Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  @@map("commentaires")
+}
+
+model FormulaireFhn {
+  id                           Int      @id @default(autoincrement())
+  dossierId                    Int      @unique @map("dossier_id")
+  estPh                        Boolean? @default(false) @map("est_ph")
+  repondPourPh                 Boolean? @default(false) @map("repond_pour_ph")
+  lienFiliation                String?  @map("lien_filiation")
+  autreLienFiliation           String?  @map("autre_lien_filiation")
+  sexe                         String?
+  trancheAge                   String?  @map("tranche_age")
+  ageSpecifique                String?  @map("age_specifique")
+  ville                        String?
+  quartier                     String?
+  handicapSensoriel            Boolean? @default(false) @map("handicap_sensoriel")
+  handicapSensorielSousType    String?  @map("handicap_sensoriel_sous_type")
+  handicapPhysique             Boolean? @default(false) @map("handicap_physique")
+  handicapPhysiqueSousType     String?  @map("handicap_physique_sous_type")
+  handicapMental               Boolean? @default(false) @map("handicap_mental")
+  handicapMentalSousType       String?  @map("handicap_mental_sous_type")
+  handicapPsychique            Boolean? @default(false) @map("handicap_psychique")
+  handicapPsychiqueSousType    String?  @map("handicap_psychique_sous_type")
+  troublesAssocies             String?  @map("troubles_associes")
+  epilepsie                    Boolean? @default(false)
+  frequenceEpilepsie           String?  @map("frequence_epilepsie")
+  origineHandicap              String?  @map("origine_handicap")
+  precisionOrigine             String?  @map("precision_origine")
+  suiviEtablissementSpecialise Boolean? @default(false) @map("suivi_etablissement_specialise")
+  scolariseEducationNationale  Boolean? @default(false) @map("scolarise_education_nationale")
+  formationProfessionnelle     Boolean? @default(false) @map("formation_professionnelle")
+  resteALaMaison               Boolean? @default(false) @map("reste_a_la_maison")
+  diagnosticProfessionnel      Boolean? @default(false) @map("diagnostic_professionnel")
+  specialiteProfessionnel      String?  @map("specialite_professionnel")
+  testsUtilises                Boolean? @default(false) @map("tests_utilises")
+  listeTests                   String?  @map("liste_tests")
+  bilanRecu                    Boolean? @default(false) @map("bilan_recu")
+  raisonAbsenceBilan           String?  @map("raison_absence_bilan")
+  connaissanceDispositifs      Boolean? @default(false) @map("connaissance_dispositifs")
+  satisfactionPriseEnCharge    String?  @map("satisfaction_prise_en_charge")
+  appreciationServices         String?  @map("appreciation_services")
+  appreciationFormations       String?  @map("appreciation_formations")
+  attentesOuverture            String?  @map("attentes_ouverture")
+  dateCreation                 DateTime @default(now()) @map("date_creation")
+  dateModification             DateTime @updatedAt @map("date_modification")
+  dossier                      Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  @@map("formulaire_fhn")
+}
+
+model FormulaireTarii {
+  id                           Int       @id @default(autoincrement())
+  dossierId                    Int       @unique @map("dossier_id")
+  nom                          String
+  prenom                       String
+  dateNaissance                DateTime  @map("date_naissance")
+  lieuNaissance                String    @map("lieu_naissance")
+  nationalite                  String
+  adresse                      String
+  telephone                    String?
+  email                        String?
+  nomMere                      String?   @map("nom_mere")
+  prenomMere                   String?   @map("prenom_mere")
+  dateNaissanceMere            DateTime? @map("date_naissance_mere")
+  lieuNaissanceMere            String?   @map("lieu_naissance_mere")
+  nationaliteMere              String?   @map("nationalite_mere")
+  situationFamilialeMere       String?   @map("situation_familiale_mere")
+  situationProfessionnelleMere String?   @map("situation_professionnelle_mere")
+  telephoneMere                String?   @map("telephone_mere")
+  telephoneProMere             String?   @map("telephone_pro_mere")
+  emailMere                    String?   @map("email_mere")
+  mereDecedee                  Boolean?  @default(false) @map("mere_decedee")
+  dateDecesMere                DateTime? @map("date_deces_mere")
+  nomPere                      String?   @map("nom_pere")
+  prenomPere                   String?   @map("prenom_pere")
+  dateNaissancePere            DateTime? @map("date_naissance_pere")
+  lieuNaissancePere            String?   @map("lieu_naissance_pere")
+  situationFamilialePere       String?   @map("situation_familiale_pere")
+  situationProfessionnellePere String?   @map("situation_professionnelle_pere")
+  telephonePere                String?   @map("telephone_pere")
+  telephoneProPere             String?   @map("telephone_pro_pere")
+  emailPere                    String?   @map("email_pere")
+  pereDecede                   Boolean?  @default(false) @map("pere_decede")
+  dateDecesPere                DateTime? @map("date_deces_pere")
+  autoriteParentale            String?   @map("autorite_parentale")
+  autreAutoriteDetails         String?   @map("autre_autorite_details")
+  dateReception                DateTime? @map("date_reception")
+  dateCreation                 DateTime  @default(now()) @map("date_creation")
+  dateModification             DateTime  @updatedAt @map("date_modification")
+  dossier                      Dossier   @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  @@map("formulaire_tarii")
+}
+
+model FormulaireWisi {
+  id                 Int      @id @default(autoincrement())
+  dossierId          Int      @unique @map("dossier_id")
+  dateCreation       DateTime @default(now()) @map("date_creation")
+  dateModification   DateTime @updatedAt @map("date_modification")
+  adresse            String
+  besoins            String
+  dateNaissance      DateTime @map("date_naissance")
+  email              String
+  lieuNaissance      String
+  niveauEtude        String
+  nom                String
+  nombreEnfants      Int
+  prenom             String
+  profession         String
+  revenuMensuel      Float
+  situationFamiliale String
+  telephone          String
+  typeHandicap       String
+  dossier            Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  @@map("formulaire_wisi")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  PARENT
+  ANALYSTE
+}
+
+enum Sexe {
+  M
+  F
+}
+
+enum StatutDossier {
+  NOUVEAU
+  EN_COURS
+  INCOMPLET
+  ACCEPTE
+  REJETE
+  CLOTURE
+}
