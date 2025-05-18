@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
 import { NextRequest } from 'next/server'
+import prisma from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const { text, author } = await request.json()
@@ -13,7 +13,7 @@ export async function POST(
       data: {
         text,
         author,
-        dossierId: parseInt(context.params.id),
+        dossierId: parseInt(params.id),
         date: new Date(),
         dateModification: new Date()
       }
